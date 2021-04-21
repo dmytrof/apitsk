@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Exception\ItemException;
 use App\Service\ItemService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -48,6 +49,26 @@ class ItemController extends AbstractController
         }
 
         $itemService->create($this->getUser(), $data);
+
+        return $this->json([]);
+    }
+
+    /**
+     * @Route("/item", name="item_update", methods={"PUT"})
+     * @IsGranted("ROLE_USER")
+     */
+    public function update(Request $request, ItemService $itemService)
+    {
+        $id = $request->request->getInt('id');
+        $data = $request->request->get('data');
+
+        try {
+            $itemService->update($id, $data);
+        } catch (ItemException $e) {
+            return $this->json(['error' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
 
         return $this->json([]);
     }
