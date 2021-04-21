@@ -28,7 +28,10 @@ class RequestContentParserSubscriber implements EventSubscriberInterface
     public function parseRequestContentToArray(ControllerEvent $event): void
     {
         $request = $event->getRequest();
-        if (!$request->getContent() || !in_array($request->getMethod(), ['PUT','PATCH'])) {
+        if (!in_array($request->getMethod(), ['PUT','PATCH'])
+            || !$request->getContent()
+            || !preg_match('/multipart\/form-data/', $request->headers->get('Content-Type'))
+        ) {
             return;
         }
 

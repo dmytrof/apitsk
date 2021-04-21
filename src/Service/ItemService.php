@@ -8,13 +8,25 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ItemService
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private $entityManager;
 
+    /**
+     * ItemService constructor.
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * Creates item
+     * @param User $user
+     * @param string $data
+     */
     public function create(User $user, string $data): void
     {
         $item = new Item();
@@ -25,7 +37,13 @@ class ItemService
         $this->entityManager->flush();
     }
 
-    public function update(int $id, string $data): void
+    /**
+     * Updates item
+     * @param int $id
+     * @param string|null $data
+     * @throws ItemException
+     */
+    public function update(int $id, ?string $data): void
     {
         $item = $this->entityManager->getRepository(Item::class)->find($id);
         if ($item === null) {
