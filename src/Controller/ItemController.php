@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Item;
 use App\Exception\ItemException;
 use App\Service\{ItemService, ItemTransformer};
 use Symfony\Component\HttpFoundation\{Request, JsonResponse, Response};
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,12 +18,10 @@ class ItemController extends AbstractController
      * @Route("/item", name="item_list", methods={"GET"})
      * @IsGranted("ROLE_USER")
      */
-    public function list(ItemTransformer $itemTransformer): JsonResponse
+    public function list(ItemService $itemService, ItemTransformer $itemTransformer): JsonResponse
     {
-        $items = $this->getDoctrine()->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
-
         $allItems = [];
-        foreach ($items as $item) {
+        foreach ($itemService->list($this->getUser()) as $item) {
             array_push($allItems, $itemTransformer->transformToArray($item));
         }
 
@@ -63,12 +61,13 @@ class ItemController extends AbstractController
         }
 
         try {
-            $itemService->update($id, $data);
+            $itemService->update($this->getUser(), $id, $data);
             return $this->json([]);
-        } catch (ItemException $e) {
-            return $this->json(['error' => $e->getMessage()], $e->getStatusCode());
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (ItemException|\Exception $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                $e instanceof HttpExceptionInterface ? $e->getStatusCode() : Response::HTTP_BAD_REQUEST
+            );
         }
     }
 
@@ -76,22 +75,20 @@ class ItemController extends AbstractController
      * @Route("/item/{id}", name="items_delete", methods={"DELETE"})
      * @IsGranted("ROLE_USER")
      */
-    public function delete(Request $request, int $id)
+    public function delete(int $id, ItemService $itemService)
     {
         if (empty($id)) {
             return $this->json(['error' => 'No data parameter'], Response::HTTP_BAD_REQUEST);
         }
 
-        $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
-
-        if ($item === null) {
-            return $this->json(['error' => 'No item'], Response::HTTP_BAD_REQUEST);
+        try {
+            $itemService->delete($this->getUser(), $id);
+            return $this->json([]);
+        } catch (ItemException|\Exception $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                $e instanceof HttpExceptionInterface ? $e->getStatusCode() : Response::HTTP_BAD_REQUEST
+            );
         }
-
-        $manager = $this->getDoctrine()->getManager();
-        $manager->remove($item);
-        $manager->flush();
-
-        return $this->json([]);
     }
 }

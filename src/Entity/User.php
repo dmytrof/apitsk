@@ -4,8 +4,7 @@ namespace App\Entity;
 
 use DateTime;
 use DateTimeInterface;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -48,21 +47,37 @@ class User implements UserInterface
      */
     private $items;
 
+    /**
+     * User constructor.
+     */
     public function __construct()
     {
         $this->items = new ArrayCollection();
     }
 
+    /**
+     * Returns id
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Returns username
+     * @return string|null
+     */
     public function getUsername(): ?string
     {
         return $this->username;
     }
 
+    /**
+     * Sets username
+     * @param string $username
+     * @return $this
+     */
     public function setUsername(string $username): self
     {
         $this->username = $username;
@@ -70,11 +85,20 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * Returns created at
+     * @return DateTimeInterface|null
+     */
     public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
+    /**
+     * Sets created at
+     * @param DateTimeInterface $createdAt
+     * @return $this
+     */
     public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -82,11 +106,20 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * Returns updated at
+     * @return DateTimeInterface|null
+     */
     public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
+    /**
+     * Sets updated at
+     * @param DateTimeInterface $updatedAt
+     * @return $this
+     */
     public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
@@ -120,6 +153,11 @@ class User implements UserInterface
         }
     }
 
+    /**
+     * Sets password
+     * @param string $password
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -127,11 +165,19 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * Returns passwird
+     * @return string
+     */
     public function getPassword(): string
     {
         return $this->password;
     }
 
+    /**
+     * Returns roles
+     * @return string[]
+     */
     public function getRoles(): array
     {
         return ['ROLE_USER'];
@@ -147,6 +193,7 @@ class User implements UserInterface
     }
 
     /**
+     * Returns items
      * @return Collection|Item[]
      */
     public function getItems(): Collection
@@ -154,6 +201,11 @@ class User implements UserInterface
         return $this->items;
     }
 
+    /**
+     * Adds new item
+     * @param Item $item
+     * @return $this
+     */
     public function addItem(Item $item): self
     {
         if (!$this->items->contains($item)) {

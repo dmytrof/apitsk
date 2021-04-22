@@ -41,16 +41,29 @@ class Item
      */
     private $user;
 
+    /**
+     * Returns id
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Returns data
+     * @return string|null
+     */
     public function getData(): ?string
     {
         return $this->data;
     }
 
+    /**
+     * Sets plain data
+     * @param string $data
+     * @return $this
+     */
     public function setData(string $data): self
     {
         $this->data = $data;
@@ -58,11 +71,20 @@ class Item
         return $this;
     }
 
+    /**
+     * Returns created at time
+     * @return DateTimeInterface|null
+     */
     public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
+    /**
+     * Sets created at time
+     * @param DateTimeInterface $createdAt
+     * @return $this
+     */
     public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -70,11 +92,20 @@ class Item
         return $this;
     }
 
+    /**
+     * Returns updated at time
+     * @return DateTimeInterface|null
+     */
     public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
+    /**
+     * Sets updated at time
+     * @param DateTimeInterface $updatedAt
+     * @return $this
+     */
     public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
@@ -108,11 +139,20 @@ class Item
         }
     }
 
+    /**
+     * Returns user
+     * @return User|null
+     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
+    /**
+     * Updates user
+     * @param User|null $user
+     * @return $this
+     */
     public function setUser(?User $user): self
     {
         $this->user = $user;

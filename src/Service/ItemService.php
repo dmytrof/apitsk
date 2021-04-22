@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use Doctrine\Persistence\ObjectRepository;
 use App\Entity\{Item, User};
 use App\Exception\ItemException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class ItemService
 {
@@ -30,6 +32,25 @@ class ItemService
     }
 
     /**
+     * Returns item repository
+     * @return ObjectRepository
+     */
+    public function getItemRepository(): ObjectRepository
+    {
+        return $this->entityManager->getRepository(Item::class);
+    }
+
+    /**
+     * Returns list of items
+     * @param User $user
+     * @return array
+     */
+    public function list(User $user): array
+    {
+        return $this->getItemRepository()->findBy(['user' => $user]);
+    }
+
+    /**
      * Creates item
      * @param User $user
      * @param string $data
@@ -50,22 +71,52 @@ class ItemService
 
     /**
      * Updates item
+     * @param User $user
      * @param int $id
      * @param string|null $data
      * @return Item
      * @throws ItemException
      */
-    public function update(int $id, ?string $data): Item
+    public function update(User $user, int $id, ?string $data): Item
     {
         /** @var Item $item */
-        $item = $this->entityManager->getRepository(Item::class)->find($id);
+        $item = $this->getItemRepository()->find($id);
         if ($item === null) {
+            throw new ItemException('Invalid item id');
+        }
+
+        if ($item->getUser() !== $user) {
             throw new ItemException('Invalid item id');
         }
 
         $item->setData($data);
 
         $this->encryptItemData($item);
+        $this->entityManager->flush();
+
+        return $item;
+    }
+
+    /**
+     * Deletes item
+     * @param User $user
+     * @param int $id
+     * @return Item
+     * @throws ItemException
+     */
+    public function delete(User $user, int $id): Item
+    {
+        $item = $this->getItemRepository()->find($id);
+
+        if ($item === null) {
+            throw new ItemException('Invalid item id');
+        }
+
+        if ($item->getUser() !== $user) {
+            throw new ItemException('Invalid item id');
+        }
+
+        $this->entityManager->remove($item);
         $this->entityManager->flush();
 
         return $item;
