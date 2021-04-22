@@ -2,12 +2,11 @@
 
 namespace App\Tests\Unit;
 
-use App\Entity\Item;
-use App\Entity\User;
-use App\Service\ItemService;
-use PHPUnit\Framework\TestCase;
+use App\Entity\{Item, User};
+use App\Service\{DataEncryption, ItemService};
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use Doctrine\Persistence\ObjectRepository;
+use PHPUnit\Framework\{TestCase, MockObject\MockObject};
 
 class ItemServiceTest extends TestCase
 {
@@ -21,18 +20,26 @@ class ItemServiceTest extends TestCase
      */
     private $itemService;
 
+    /**
+     * @var DataEncryption
+     */
+    private $dataEncryption;
+
     public function setUp(): void
     {
         /** @var EntityManagerInterface */
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        
-        $this->itemService = new ItemService($this->entityManager);
+
+        $this->dataEncryption = new DataEncryption();
+
+        $this->itemService = new ItemService($this->entityManager, $this->dataEncryption);
     }
 
     public function testCreate(): void
     {
         /** @var User */
         $user = $this->createMock(User::class);
+        $user->method('getId')->willReturn(rand(1, 99999));
         $data = 'secret data';
 
         $expectedObject = new Item();
@@ -43,6 +50,31 @@ class ItemServiceTest extends TestCase
 
         $this->entityManager->expects($this->once())->method('persist')->with($expectedObject);
 
-        $this->itemService->create($user, $data);
+        $item = $this->itemService->create($user, $data);
+
+        $this->assertEquals($data, $this->dataEncryption->decryptData($item));
+    }
+
+    public function testUpdate(): void
+    {
+        $itemId = 33;
+        /** @var User */
+        $user = $this->createMock(User::class);
+        $user->method('getId')->willReturn(rand(1, 99999));
+        $data = 'new secret data';
+
+        $expectedObject = new Item();
+        $expectedObject
+            ->setUser($user)
+            ->setData('some encrypted value')
+        ;
+
+        $repo = $this->createMock(ObjectRepository::class);
+        $repo->method('find')->with($itemId)->willReturn($expectedObject);
+        $this->entityManager->method('getRepository')->with(Item::class)->willReturn($repo);
+
+        $item = $this->itemService->update($itemId, $data);
+
+        $this->assertEquals($data, $this->dataEncryption->decryptData($item));
     }
 }
